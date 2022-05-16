@@ -55,7 +55,6 @@ class SyncController extends Controller
 
         foreach($data as $lang => $strings){
 
-
             $resources = new SimpleXMLElement('<resources></resources>');
             
             foreach($strings as $key => $string){
@@ -87,10 +86,7 @@ class SyncController extends Controller
 
     private function prepareStringForXML($string){
 
-       // $string = str_replace("\n", "\\n'", $string);
         $string = str_replace("'", "\'", $string);
-
-       // $string = str_replace(chr(0xa0), " ", $string);
 
         return $string;
     }
@@ -102,6 +98,9 @@ class SyncController extends Controller
 
         $string = str_replace("\&#13;", "\\n", $string);
         $string = str_replace("&#13;", "\\n", $string);
+
+        $string = str_replace("\\n\n", "\\n", $string);
+
         return $string;
     }
 
