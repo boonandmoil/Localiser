@@ -16,7 +16,6 @@ class SyncController extends Controller
         $output_type = $request->input('output_type');
         $source_file = $request->csv_file;
 
-        $csvData = file_get_contents($source_file);
         $csv = new Csv();
         $csv->delimiter = ',';
         $csv->parseFile($source_file);
@@ -55,12 +54,23 @@ class SyncController extends Controller
 
         foreach($data as $lang => $strings){
 
-            $resources = new SimpleXMLElement('<resources></resources>');
+            $resources = new ComplexXMLElement('<resources></resources>');
             
             foreach($strings as $key => $string){
 
-                $string = $resources->addChild('string', $this->prepareStringForXML($string));
-                $string->addAttribute('name', $key);
+                if($string != strip_tags($string)) {
+
+                    $string = $this->prepareHTMLStringForXML($string);
+
+                    $resources->addChildWithCData($key, $string);
+
+                } else {
+                    
+                    $stringNode = $resources->addChild('string', $string);
+                    $stringNode->addAttribute('name', $key);
+
+                }
+
             }
 
             $dom = dom_import_simplexml($resources);
@@ -84,9 +94,10 @@ class SyncController extends Controller
 
     } 
 
-    private function prepareStringForXML($string){
-
-        $string = str_replace("'", "\'", $string);
+    private function prepareHTMLStringForXML($string){
+        
+        $string = str_replace("’", "&rsquo;", $string);
+        $string = str_replace("'", "&rsquo;", $string);
 
         return $string;
     }
@@ -100,6 +111,8 @@ class SyncController extends Controller
         $string = str_replace("&#13;", "\\n", $string);
 
         $string = str_replace("\\n\n", "\\n", $string);
+
+        $string = str_replace("'", "\'", $string);
 
         return $string;
     }
@@ -115,11 +128,26 @@ class SyncController extends Controller
             case "Spanish":
                 return "-es";
             case "Portuguese":
-                    return "-pt";
+                return "-pt";
             case "Russian":
-                    return "-ru";
+                return "-ru";
             case "Welsh":
-                    return "-cy";
+                return "-cy";
         }
+    }
+}
+
+class ComplexXMLElement extends SimpleXMLElement {
+    
+    public function addChildWithCData($key, $value = NULL) {
+        
+        $new_child = $this->addChild("string");
+        $new_child->addAttribute('name', $key);
+
+        $node = dom_import_simplexml($new_child); 
+        $no = $node->ownerDocument; 
+        $node->appendChild($no->createCDATASection($value)); 
+    
+        return $new_child;
     }
 }
