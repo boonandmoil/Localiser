@@ -30,11 +30,11 @@ class SyncController extends Controller
 
         foreach ($data as $i => $row) {
 
-            $string_key = $row['key'];
+            $string_key = $row['Key'];
 
             foreach($row as $lang => $string){
 
-                if($lang == "key" || !$headers->contains($lang)){
+                if($lang == "Key" || !$headers->contains($lang)){
                     continue;
                 }
                 if(trim($string) !== ""){
@@ -56,17 +56,17 @@ class SyncController extends Controller
 
             $resources = new ComplexXMLElement('<resources></resources>');
             
+            ksort($strings, SORT_NATURAL);
+
             foreach($strings as $key => $string){
 
                 if($string != strip_tags($string)) {
 
-                    $string = $this->prepareHTMLStringForXML($string);
-
-                    $resources->addChildWithCData($key, $string);
+                    $resources->addChildWithCData($key, $this->prepareHTMLStringForXML($string));
 
                 } else {
                     
-                    $stringNode = $resources->addChild('string', $string);
+                    $stringNode = $resources->addChild('string', $this->prepareString($string));
                     $stringNode->addAttribute('name', $key);
 
                 }
@@ -99,6 +99,11 @@ class SyncController extends Controller
         $string = str_replace("’", "&rsquo;", $string);
         $string = str_replace("'", "&rsquo;", $string);
 
+        return $string;
+    }
+
+    private function prepareString($string){
+        $string = str_replace("\n", "\\n", $string);
         return $string;
     }
 
