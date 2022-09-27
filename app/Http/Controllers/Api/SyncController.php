@@ -19,6 +19,7 @@ class SyncController extends Controller
         $csv = new Csv();
         $csv->delimiter = ',';
         $csv->parseFile($source_file);
+        unlink($source_file);
 
         $headers = collect($csv->titles)->filter(function ($value) {
             return preg_match('/^[a-zA-Z]+$/', $value);
@@ -77,15 +78,13 @@ class SyncController extends Controller
 
             $exportContents = $dom->ownerDocument->saveXML($dom->ownerDocument->documentElement);
 
-            //$hardCodedPath = "/Users/marie/Documents/Projects/BAM/Clients/SmokeFree/smokefree-android-diga/app/src/main/res";
+           $lang_prefix = $this->langCodePrefixForLanguage($lang);
 
-            $lang_prefix = $this->langCodePrefixForLanguage($lang);
+            $file_path = "values" . $lang_prefix . "/strings.xml";
 
-            $hardCodedPath = "";
+            Storage::disk('res')->put($file_path, $this->prettifyXML($exportContents));
 
-            $file_path = $hardCodedPath . "/values" . $lang_prefix . "/strings.xml";
-
-            Storage::disk('local')->put($file_path, $this->prettifyXML($exportContents));
+            
 
         }
 
@@ -115,9 +114,16 @@ class SyncController extends Controller
         $string = str_replace("\&#13;", "\\n", $string);
         $string = str_replace("&#13;", "\\n", $string);
 
-        $string = str_replace("\\n\n", "\\n", $string);
+        $string = str_replace(" \n", "\\n", $string);
+
+        $string = str_replace("\n\n", "\\n", $string);
+
+        //weird bug diga success
+        $string = str_replace("*\\", "*", $string);
 
         $string = str_replace("'", "\'", $string);
+
+        $string = str_replace("%@", "%s", $string);
 
         return $string;
     }
