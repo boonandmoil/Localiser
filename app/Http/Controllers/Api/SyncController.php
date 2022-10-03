@@ -113,17 +113,18 @@ class SyncController extends Controller
 
         $string = str_replace("\&#13;", "\\n", $string);
         $string = str_replace("&#13;", "\\n", $string);
-
+    
         $string = str_replace(" \n", "\\n", $string);
-
         $string = str_replace("\n\n", "\\n", $string);
 
-        //weird bug diga success
-        $string = str_replace("*\\", "*", $string);
+        //Fix iOS new line 
+        $string = str_replace("\\\\n", "\\n", $string);
 
         $string = str_replace("'", "\'", $string);
 
         $string = str_replace("%@", "%s", $string);
+
+        $string = str_replace("\\n]", "]", $string);
 
         return $string;
     }
