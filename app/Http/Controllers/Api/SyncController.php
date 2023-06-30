@@ -19,7 +19,7 @@ class SyncController extends Controller
         $csv = new Csv();
         $csv->delimiter = ',';
         $csv->parseFile($source_file);
-        unlink($source_file);
+        //unlink($source_file);
 
         $headers = collect($csv->titles)->filter(function ($value) {
             return preg_match('/^[a-zA-Z]+$/', $value);
@@ -27,7 +27,7 @@ class SyncController extends Controller
 
         $data = $csv->data;
 
-        $seperated = [];
+        $separated = [];
 
         foreach ($data as $i => $row) {
 
@@ -39,7 +39,7 @@ class SyncController extends Controller
                     continue;
                 }
                 if(trim($string) !== ""){
-                    $seperated[$lang][$string_key] = $string;
+                    $separated[$lang][$string_key] = $string;
                 }
 
         
@@ -47,7 +47,7 @@ class SyncController extends Controller
 
         }
 
-        $this->createXML($seperated);
+        $this->createXML($separated);
 
     } 
 
@@ -125,6 +125,8 @@ class SyncController extends Controller
         $string = str_replace("%@", "%s", $string);
 
         $string = str_replace("\\n]", "]", $string);
+
+        $string = str_replace(".\\n<", ".<", $string);
 
         return $string;
     }
